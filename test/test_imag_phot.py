@@ -69,6 +69,9 @@ class ImagePhotTestCase(TestCase):
             self.assertIsInstance(key, int)
             self.assertIsInstance(value, InstrumentInfo)
 
+        # We should be able to get a version string.
+        self.assertIsInstance(itc.get_version(), string_type)
+
     def test_2_wfcam(self):
         """
         Test WFCAM results against those from the original Perl ITC.

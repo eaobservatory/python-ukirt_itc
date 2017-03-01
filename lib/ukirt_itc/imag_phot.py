@@ -25,6 +25,7 @@ from math import exp, log10, pi, sqrt
 from pkgutil import get_data
 
 from .error import UKIRTITCError
+from .version import version
 
 
 SkyInfo = namedtuple(
@@ -132,6 +133,13 @@ class UKIRTImagPhotITC(object):
                             name, filter_))
 
             cls._info[instrument] = info_obj
+
+    def get_version(self):
+        """
+        Get the module version.
+        """
+
+        return version
 
     def calculate_time(
             self, mag, snr,
