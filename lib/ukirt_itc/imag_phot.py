@@ -141,6 +141,26 @@ class UKIRTImagPhotITC(object):
 
         return version
 
+    def get_available_filters(self):
+        """
+        Get an ordered dictionary of filters, each giving a set of
+        instruments for which that filter is available.
+        """
+
+        result = OrderedDict()
+
+        for filter_ in self.FILTERS:
+            avail = set()
+
+            for (instrument, info) in self._info.items():
+                if filter_ in info.zeropoint:
+                    avail.add(instrument)
+
+            if avail:
+                result[filter_] = avail
+
+        return result
+
     def calculate_time(
             self, mag, snr,
             instrument, filter_, aperture, sky, seeing, airmass,
