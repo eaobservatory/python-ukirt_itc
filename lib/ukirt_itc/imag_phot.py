@@ -24,7 +24,7 @@ import json
 from math import exp, log10, pi, sqrt
 from pkgutil import get_data
 
-from .error import UKIRTITCError
+from .error import UKIRTITCError, trap_math_error
 from .version import version
 
 
@@ -180,24 +180,25 @@ class UKIRTImagPhotITC(object):
                 'Filter "{0}" is not available for instrument "{1}".'.format(
                     filter_, instrument.name))
 
-        area = self._determine_area(instrument, aperture, seeing, is_extended)
+        with trap_math_error():
+            area = self._determine_area(instrument, aperture, seeing, is_extended)
 
-        if is_extended:
-            mag = self._mag_per_pixel(mag, area)
+            if is_extended:
+                mag = self._mag_per_pixel(mag, area)
 
-        mag_sky = self._get_sky_magnitude(filter_, sky)
+            mag_sky = self._get_sky_magnitude(filter_, sky)
 
-        extinction = self._extinction.get(filter_, 0.0)
+            extinction = self._extinction.get(filter_, 0.0)
 
-        fd_sky = 10 ** (-0.4 * (mag_sky - zeropoint)) * instrument.gain  # Flux of the sky per e-/arcsec**2
-        zp_airmass = zeropoint - (airmass - 1) * extinction
-        flux_object = area.frac_aperture * 10 ** (-0.4 * (mag - zp_airmass)) * instrument.gain  # Flux of the source (e-/sec)
+            fd_sky = 10 ** (-0.4 * (mag_sky - zeropoint)) * instrument.gain  # Flux of the sky per e-/arcsec**2
+            zp_airmass = zeropoint - (airmass - 1) * extinction
+            flux_object = area.frac_aperture * 10 ** (-0.4 * (mag - zp_airmass)) * instrument.gain  # Flux of the source (e-/sec)
 
-        a = (flux_object / snr) ** 2
-        b = flux_object + fd_sky * area.object_ * (1 + area.object_ / area.sky) + instrument.dark * area.object_ / area.pixel * (1 + area.object_ / area.sky)
-        c = instrument.nread ** 2 * area.object_ / area.pixel * (1 + area.object_ / area.sky)
+            a = (flux_object / snr) ** 2
+            b = flux_object + fd_sky * area.object_ * (1 + area.object_ / area.sky) + instrument.dark * area.object_ / area.pixel * (1 + area.object_ / area.sky)
+            c = instrument.nread ** 2 * area.object_ / area.pixel * (1 + area.object_ / area.sky)
 
-        int_time = (b + sqrt(b ** 2 + 4 * a * c)) / (2 * a)
+            int_time = (b + sqrt(b ** 2 + 4 * a * c)) / (2 * a)
 
         if not with_extra_output:
             return int_time
@@ -224,23 +225,24 @@ class UKIRTImagPhotITC(object):
                 'Filter "{0}" is not available for instrument "{1}".'.format(
                     filter_, instrument.name))
 
-        area = self._determine_area(instrument, aperture, seeing, is_extended)
+        with trap_math_error():
+            area = self._determine_area(instrument, aperture, seeing, is_extended)
 
-        mag_sky = self._get_sky_magnitude(filter_, sky)
+            mag_sky = self._get_sky_magnitude(filter_, sky)
 
-        extinction = self._extinction.get(filter_, 0.0)
+            extinction = self._extinction.get(filter_, 0.0)
 
-        fd_sky = 10 ** (-0.4 * (mag_sky - zeropoint)) * instrument.gain  # Flux of the sky per e-/arcsec**2
-        zp_airmass = zeropoint - (airmass-1) * extinction
-        a = ((area.frac_aperture * int_time) ** 2) / (snr ** 2)
-        b = -(int_time * area.frac_aperture)
-        c = -(area.object_ / area.pixel) * (1 + area.object_ / area.sky) * (fd_sky * area.pixel * int_time + instrument.dark * int_time + instrument.nread ** 2)
-        flux_object = (-1 * b + sqrt(b ** 2 - 4 * a * c)) / (2 * a)
-        mag = -2.5 * log10(flux_object / instrument.gain) + zp_airmass
-        flux_object = 10 ** (-0.4 * (mag - zp_airmass)) * instrument.gain * area.frac_aperture  # Flux of the source (e-/sec)
+            fd_sky = 10 ** (-0.4 * (mag_sky - zeropoint)) * instrument.gain  # Flux of the sky per e-/arcsec**2
+            zp_airmass = zeropoint - (airmass-1) * extinction
+            a = ((area.frac_aperture * int_time) ** 2) / (snr ** 2)
+            b = -(int_time * area.frac_aperture)
+            c = -(area.object_ / area.pixel) * (1 + area.object_ / area.sky) * (fd_sky * area.pixel * int_time + instrument.dark * int_time + instrument.nread ** 2)
+            flux_object = (-1 * b + sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+            mag = -2.5 * log10(flux_object / instrument.gain) + zp_airmass
+            flux_object = 10 ** (-0.4 * (mag - zp_airmass)) * instrument.gain * area.frac_aperture  # Flux of the source (e-/sec)
 
-        if is_extended:
-            mag = self._mag_per_sq_arcsec(mag, area)
+            if is_extended:
+                mag = self._mag_per_sq_arcsec(mag, area)
 
         if not with_extra_output:
             return mag
@@ -267,23 +269,24 @@ class UKIRTImagPhotITC(object):
                 'Filter "{0}" is not available for instrument "{1}".'.format(
                     filter_, instrument.name))
 
-        area = self._determine_area(instrument, aperture, seeing, is_extended)
+        with trap_math_error():
+            area = self._determine_area(instrument, aperture, seeing, is_extended)
 
-        if is_extended:
-            mag = self._mag_per_pixel(mag, area)
+            if is_extended:
+                mag = self._mag_per_pixel(mag, area)
 
-        mag_sky = self._get_sky_magnitude(filter_, sky)
+            mag_sky = self._get_sky_magnitude(filter_, sky)
 
-        extinction = self._extinction.get(filter_, 0.0)
+            extinction = self._extinction.get(filter_, 0.0)
 
-        fd_sky = 10 ** (-0.4 * (mag_sky - zeropoint)) * instrument.gain  # Flux of the sky per e-/arcsec**2
-        zp_airmass = zeropoint - (airmass - 1) * extinction
-        flux_object = area.frac_aperture * 10 ** (-0.4 * (mag - zp_airmass)) * instrument.gain  # Flux of the source (e-/sec)
+            fd_sky = 10 ** (-0.4 * (mag_sky - zeropoint)) * instrument.gain  # Flux of the sky per e-/arcsec**2
+            zp_airmass = zeropoint - (airmass - 1) * extinction
+            flux_object = area.frac_aperture * 10 ** (-0.4 * (mag - zp_airmass)) * instrument.gain  # Flux of the source (e-/sec)
 
-        (nstar, nsky, ndark, noise) = self._calculate_noise(
-            instrument, area, int_time, flux_object, fd_sky)
+            (nstar, nsky, ndark, noise) = self._calculate_noise(
+                instrument, area, int_time, flux_object, fd_sky)
 
-        snr = nstar / noise
+            snr = nstar / noise
 
         if not with_extra_output:
             return snr
@@ -337,20 +340,23 @@ class UKIRTImagPhotITC(object):
         Compute extra information to show with the results.
         """
 
-        (nstar, nsky, ndark, noise) = self._calculate_noise(
-            instrument, area, int_time, flux_object, fd_sky)
+        with trap_math_error():
+            (nstar, nsky, ndark, noise) = self._calculate_noise(
+                instrument, area, int_time, flux_object, fd_sky)
 
-        return {
-            'pixsize': instrument.pixsize,
-            'n_pix': area.n_pix,
-            'frac_aperture': area.frac_aperture,
-            'e_obj': nstar,
-            'e_sky': nsky,
-            'noi_obj': sqrt(nstar),
-            'noi_sky': sqrt((area.object_ / area.pixel * (1 + area.object_ / area.sky) * nsky)),
-            'noi_ccd': sqrt((area.object_ / area.pixel * (1 + area.object_ / area.sky) * (ndark + instrument.nread ** 2))),
-            'limit': (self.LIMIT_BACKGROUND if (nsky > (3 * ndark + instrument.nread ** 2)) else self.LIMIT_READOUT),
-        }
+            extra = {
+                'pixsize': instrument.pixsize,
+                'n_pix': area.n_pix,
+                'frac_aperture': area.frac_aperture,
+                'e_obj': nstar,
+                'e_sky': nsky,
+                'noi_obj': sqrt(nstar),
+                'noi_sky': sqrt((area.object_ / area.pixel * (1 + area.object_ / area.sky) * nsky)),
+                'noi_ccd': sqrt((area.object_ / area.pixel * (1 + area.object_ / area.sky) * (ndark + instrument.nread ** 2))),
+                'limit': (self.LIMIT_BACKGROUND if (nsky > (3 * ndark + instrument.nread ** 2)) else self.LIMIT_READOUT),
+            }
+
+        return extra
 
     def _mag_per_pixel(self, mag, area):
         """

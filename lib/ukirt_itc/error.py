@@ -16,6 +16,25 @@
 from __future__ import absolute_import, division, print_function, \
     unicode_literals
 
+from contextlib import contextmanager
+
 
 class UKIRTITCError(Exception):
     pass
+
+
+@contextmanager
+def trap_math_error(description='calculation'):
+    try:
+        yield
+
+    except ZeroDivisionError:
+        raise UKIRTITCError(
+            'Division by zero error occurred during {}.'.format(description))
+
+    except ValueError as e:
+        if e.args[0] == 'math domain error':
+            raise UKIRTITCError(
+                'Negative square root error occurred during {}.'.format(
+                    description))
+        raise
